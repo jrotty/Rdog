@@ -82,7 +82,6 @@ public static function sc($v) {
   /*将注册用户默认用户组改为插件设置的用户组*/
   $v['group']=$yonghuzu;
   /*返回注册参数*/
-  $v['password']=$this->request->password;
   return $v;
 }
 public static function sx($con,$obj) {
