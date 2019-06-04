@@ -92,7 +92,7 @@ public static function sx($con,$obj) {
     /*连接数据库，将文章状态改为publish即公开状态*/
     $db = Typecho_Db::get();
     $update = $db->update('table.contents')->rows(array('status'=>'publish'))->where('cid = ?', $obj->cid);
-    $updateRows= $db->query($update);
+    $db->query($update);
     /*传递最新文章状态*/
     $obj->status = 'publish';
     }
