@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package 权限狗
  * @author 泽泽
- * @version 1.0.1
+ * @version 1.0.0
  * @link http://qqdie.com
  */
 class Rdog_Plugin implements Typecho_Plugin_Interface
