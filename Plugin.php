@@ -1,14 +1,14 @@
 <?php
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 /**
- * 修改注册时默认用户组，贡献者可直接发布文章无需审核
+ * 修改注册时默认用户组，贡献者可直接发布文章无需审核,前台注册支持用户输入密码
  * 
  * @package 权限狗
  * @author 泽泽
- * @version 1.0.0
+ * @version 1.1.6
  * @link http://qqdie.com
  */
-class Rdog_Plugin implements Typecho_Plugin_Interface
+class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interface
 {
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
@@ -19,8 +19,9 @@ class Rdog_Plugin implements Typecho_Plugin_Interface
      */
     public static function activate()
     {
-      Typecho_Plugin::factory('Widget_Register')->register = array('Rdog_Plugin', 'sc');
-      Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish = array('Rdog_Plugin', 'sx');
+      Typecho_Plugin::factory('Widget_Register')->register = array('Rdog_Plugin', 'zhuce'); 
+	  Typecho_Plugin::factory('Widget_Register')->finishRegister = array('Rdog_Plugin', 'zhucewan');
+	  Typecho_Plugin::factory('Widget_Contents_Post_Edit')->write = array('Rdog_Plugin', 'fabu');
     }
     
     /**
@@ -76,28 +77,51 @@ class Rdog_Plugin implements Typecho_Plugin_Interface
      * @access public
      * @return void
      */
-public static function sc($v) {
+public static function zhuce($v) {
   /*获取插件设置*/
-  $yonghuzu = Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->yonghuzu;
+   $yonghuzu = Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->yonghuzu;
+  $hasher = new PasswordHash(8, true);
+  /*判断注册表单是否有密码*/
+  if(isset(Typecho_Widget::widget('Widget_Register')->request->password)){
+    /*将密码设定为用户输入的密码*/
+    $generatedPassword = Typecho_Widget::widget('Widget_Register')->request->password;
+  }else{
+    /*用户没输入密码，随机密码*/
+    $generatedPassword = Typecho_Common::randString(7);
+  }
+  /*将密码设置为常量，方便下个函数adu()直接获取*/
+  define('passd', $generatedPassword);
+  /*将密码加密*/
+  $wPassword = $hasher->HashPassword($generatedPassword);
+  /*设置用户密码*/
+  $v['password']=$wPassword;
   /*将注册用户默认用户组改为插件设置的用户组*/
   $v['group']=$yonghuzu;
   /*返回注册参数*/
   return $v;
 }
-public static function sx($con,$obj) {
+public static function zhucewan($obj) {
+ /*获取密码*/
+ $wPassword=passd;
+ /*登录账号*/
+ $obj->user->login($obj->request->name,$wPassword);
+ /*删除cookie*/
+ Typecho_Cookie::delete('__typecho_first_run');
+ Typecho_Cookie::delete('__typecho_remember_name');
+ Typecho_Cookie::delete('__typecho_remember_mail');
+ /*发出提示*/
+ $obj->widget('Widget_Notice')->set(_t('用户 <strong>%s</strong> 已经成功注册, 密码为 <strong>%s</strong>', $obj->screenName, $wPassword), 'success');
+ /*跳转地址(后台)*/
+ $obj->response->redirect($obj->options->adminUrl);
+}
+public static function fabu($con,$obj) {
   /*插件用户设置是否勾选*/    
   if (!empty(Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tuozhan) && in_array('contributor-nb',  Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tuozhan)){
-  /*如果用户是贡献者并且文章状态为待审核*/
-    if($obj->status == 'waiting' && $obj->author->group=='contributor'){
-    /*连接数据库，将文章状态改为publish即公开状态*/
-    $db = Typecho_Db::get();
-    $update = $db->update('table.contents')->rows(array('status'=>'publish'))->where('cid = ?', $obj->cid);
-    $db->query($update);
-    /*传递最新文章状态*/
-    $obj->status = 'publish';
-    }
-  }
+  /*如果用户是贡献者临时给予编辑权限*/
+  if($obj->author->group=='contributor'||$obj->user->group=='contributor'){
+  $obj->user->group='editor';
+  }}
+  return $con;
 }
-
-
+ 
 }
