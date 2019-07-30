@@ -1,11 +1,11 @@
 <?php
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 /**
- * 修改注册时默认用户组，贡献者可直接发布文章无需审核,前台注册支持用户输入密码
+ * 修改注册时默认用户组，贡献者可直接发布文章无需审核,前台注册支持用户输入密码,支持模板开发者设置前台注册后的跳转地址，设置前台文章发布后的跳转地址
  * 
  * @package 权限狗
  * @author 泽泽
- * @version 1.1.6
+ * @version 1.2.0
  * @link http://qqdie.com
  */
 class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interface
@@ -22,6 +22,7 @@ class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interf
       Typecho_Plugin::factory('Widget_Register')->register = array('Rdog_Plugin', 'zhuce'); 
 	  Typecho_Plugin::factory('Widget_Register')->finishRegister = array('Rdog_Plugin', 'zhucewan');
 	  Typecho_Plugin::factory('Widget_Contents_Post_Edit')->write = array('Rdog_Plugin', 'fabu');
+	  Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish = array('Rdog_Plugin', 'fabuwan');
     }
     
     /**
@@ -45,6 +46,7 @@ class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interf
     {
 
     $yonghuzu = new Typecho_Widget_Helper_Form_Element_Radio('yonghuzu',array(
+      'visitor' => _t('访问者'),
       'subscriber' => _t('关注者'),
       'contributor' => _t('贡献者'),
       'editor' => _t('编辑'),
@@ -53,13 +55,15 @@ class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interf
 不同的用户组拥有不同的权限，具体的权限分配表请<a href="http://docs.typecho.org/develop/acl" target="_blank" rel="noopener noreferrer">参考这里</a>.</p>'));
     $form->addInput($yonghuzu); 
 
-           
     $tuozhan = new Typecho_Widget_Helper_Form_Element_Checkbox('tuozhan', 
     array('contributor-nb' => _t('勾选该选项让【贡献者】直接发布文章无需审核'),
 ),
     array(), _t('拓展设置'), _t(''));
     $form->addInput($tuozhan->multiMode());
-     
+      
+      
+//    $tcat = new Typecho_Widget_Helper_Form_Element_Text('tcat', NULL, NULL, _t('特例分类'), _t('在这里填入一个分类mid，分类间用英文的半角逗号隔开如【1,2】，这些分类贡献者发布文章必须需要经过审核！'));
+//    $form->addInput($tcat);
     }
     
     /**
@@ -112,16 +116,51 @@ public static function zhucewan($obj) {
  /*发出提示*/
  $obj->widget('Widget_Notice')->set(_t('用户 <strong>%s</strong> 已经成功注册, 密码为 <strong>%s</strong>', $obj->screenName, $wPassword), 'success');
  /*跳转地址(后台)*/
+ if (NULL != $obj->request->referer) {
+ $obj->response->redirect($obj->request->referer);
+ }else if(NULL != $obj->request->tz){
+   if (Helper::options()->rewrite==0){$authorurl=Helper::options()->rootUrl.'/index.php/author/';}else{$authorurl=Helper::options()->rootUrl.'/author/';}
+  $obj->response->redirect($authorurl.$obj->user->uid);
+ }else{
  $obj->response->redirect($obj->options->adminUrl);
+ }
 }
+  
+  
 public static function fabu($con,$obj) {
   /*插件用户设置是否勾选*/    
   if (!empty(Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tuozhan) && in_array('contributor-nb',  Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tuozhan)){
-  /*如果用户是贡献者临时给予编辑权限*/
+ /*获取插件设置的分类id*/      
+//$tcat = Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tcat;
+/*求插件设置的分类id数据与用户勾选的分类数据交集*/
+//$result=array_intersect($tcat,$con['category']);   && count($result)==0
+  /*如果用户是贡献者临时给予编辑权限，并且非特例分类*/
   if($obj->author->group=='contributor'||$obj->user->group=='contributor'){
   $obj->user->group='editor';
   }}
   return $con;
 }
- 
+  
+  
+ public static function fabuwan($con,$obj) {
+           /** 跳转验证后地址 */
+        if (NULL != $obj->request->referer) {
+            /** 发送ping */
+            $trackback = array_unique(preg_split("/(\r|\n|\r\n)/", trim($obj->request->trackback)));
+            $obj->widget('Widget_Service')->sendPing($obj->cid, $trackback);
+            /** 设置提示信息 */
+            $obj->widget('Widget_Notice')->set('post' == $obj->type ?
+            _t('文章 "<a href="%s">%s</a>" 已经发布', $obj->permalink, $obj->title) :
+            _t('文章 "%s" 等待审核', $obj->title), 'success');
+            /** 设置高亮 */
+            $obj->widget('Widget_Notice')->highlight($obj->theId);
+            /** 获取页面偏移 */
+            $pageQuery = $obj->getPageOffsetQuery($obj->cid);
+            /** 页面跳转 */
+            $obj->response->redirect($obj->request->referer);
+             
+        } else{
+            return $con;
+        }
+ }
 }
