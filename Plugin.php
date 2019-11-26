@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package 权限狗
  * @author 泽泽
- * @version 1.2.0
+ * @version 1.3.0
  * @link http://qqdie.com
  */
 class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interface
@@ -23,6 +23,7 @@ class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interf
 	  Typecho_Plugin::factory('Widget_Register')->finishRegister = array('Rdog_Plugin', 'zhucewan');
 	  Typecho_Plugin::factory('Widget_Contents_Post_Edit')->write = array('Rdog_Plugin', 'fabu');
 	  Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish = array('Rdog_Plugin', 'fabuwan');
+      Typecho_Plugin::factory('admin/footer.php')->end = array('Rdog_Plugin', 'footerjs');
     }
     
     /**
@@ -57,8 +58,11 @@ class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interf
 
     $tuozhan = new Typecho_Widget_Helper_Form_Element_Checkbox('tuozhan', 
     array('contributor-nb' => _t('勾选该选项让【贡献者】直接发布文章无需审核'),
+          'register-nb' => _t('勾选该选项后台注册功能将可以直接设置注册密码'),
 ),
-    array(), _t('拓展设置'), _t(''));
+    array(), _t('拓展设置'), _t('<div style="background: #fff;margin: 15px 0;padding: 10px 5px;"><p style="font-weight: bold;margin-top: 0;">感谢赞助：</p>
+腾讯云渠道代理商
+    </div>'));
     $form->addInput($tuozhan->multiMode());
       
       
@@ -162,5 +166,15 @@ public static function fabu($con,$obj) {
         } else{
             return $con;
         }
+ }
+ public static function footerjs(){
+   if (!empty(Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tuozhan) && in_array('register-nb',  Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tuozhan)){
+?>
+<script>
+var rdoghtml='<p><label for="password" class="sr-only">密码</label><input type="password"  id="password" name="password" placeholder="输入密码" class="text-l w-100" autocomplete="off" required></p><p><label for="confirm" class="sr-only">确认密码</label><input type="password"  id="confirm" name="confirm" placeholder="再次输入密码" class="text-l w-100" autocomplete="off" required></p>';
+$("#mail").parent().after(rdoghtml);
+</script>
+<?php
+   }
  }
 }
