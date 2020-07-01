@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package 权限狗
  * @author 泽泽
- * @version 1.3.0
+ * @version 1.4.0
  * @link https://qqdie.com/archives/typecho-Rdog.html
  */
 class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interface
@@ -148,7 +148,10 @@ public static function fabu($con,$obj) {
   
  public static function fabuwan($con,$obj) {
            /** 跳转验证后地址 */
-        if (NULL != $obj->request->referer) {
+        if($obj->request->referer=='return'){
+          exit;
+        }
+        elseif (NULL != $obj->request->referer) {
             /** 发送ping */
             $trackback = array_unique(preg_split("/(\r|\n|\r\n)/", trim($obj->request->trackback)));
             $obj->widget('Widget_Service')->sendPing($obj->cid, $trackback);
