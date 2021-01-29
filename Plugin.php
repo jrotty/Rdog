@@ -160,10 +160,7 @@ return $con;
   
  public static function fabuwan($con,$obj) {
            /** 跳转验证后地址 */
-        if($obj->request->referer=='return'){
-          exit;
-        }
-        elseif (NULL != $obj->request->referer) {
+if (NULL != $obj->request->referer) {
             /** 发送ping */
             $trackback = array_unique(preg_split("/(\r|\n|\r\n)/", trim($obj->request->trackback)));
             $obj->widget('Widget_Service')->sendPing($obj->cid, $trackback);
