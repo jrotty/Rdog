@@ -6,7 +6,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * @package 权限狗
  * @author 泽泽
  * @version 1.6.0
- * @link https://zezeshe.com/archives/typecho-Rdog.html
+ * @link https://github.com/jrotty/Rdog
  */
 class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interface
 {
