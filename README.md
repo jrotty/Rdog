@@ -1,5 +1,7 @@
 # Rdog
-typecho插件，修改注册时默认用户组，贡献者可直接发布文章无需审核
+typecho插件，修改注册时默认用户组，贡献者可直接发布文章无需审核，最新版要求使用typecho1.2及以上否则部分功能有bug
+
+typecho1.1用户请访问 https://github.com/jrotty/Rdog/releases 下载1.6.0版本
 
 # 功能介绍
 
