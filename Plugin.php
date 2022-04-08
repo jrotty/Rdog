@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package 权限狗
  * @author 泽泽
- * @version 1.6.0
+ * @version 1.6.1
  * @link https://github.com/jrotty/Rdog
  */
 class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interface
@@ -163,7 +163,7 @@ return $con;
 if (NULL != $obj->request->referer) {
             /** 发送ping */
             $trackback = array_unique(preg_split("/(\r|\n|\r\n)/", trim($obj->request->trackback)));
-            $obj->widget('Widget_Service')->sendPing($obj->cid, $trackback);
+            $obj->widget('Widget_Service')->sendPing($obj, $trackback);
             /** 设置提示信息 */
             $obj->widget('Widget_Notice')->set('post' == $obj->type ?
             _t('文章 "<a href="%s">%s</a>" 已经发布', $obj->permalink, $obj->title) :
