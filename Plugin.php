@@ -19,11 +19,11 @@ class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interf
      */
     public static function activate()
     {
-      Typecho_Plugin::factory('Widget_Register')->register_11 = array('Rdog_Plugin', 'zhuce'); 
-	  Typecho_Plugin::factory('Widget_Register')->finishRegister_11 = array('Rdog_Plugin', 'zhucewan');
-	  Typecho_Plugin::factory('Widget_Contents_Post_Edit')->write_11 = array('Rdog_Plugin', 'fabu');
-	  Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish_11 = array('Rdog_Plugin', 'fabuwan');
-      Typecho_Plugin::factory('admin/footer.php')->end_11 = array('Rdog_Plugin', 'footerjs');
+	    Typecho_Plugin::factory('Widget_Register')->register_11 = array('Rdog_Plugin', 'zhuce'); 
+	    Typecho_Plugin::factory('Widget_Register')->finishRegister_11 = array('Rdog_Plugin', 'zhucewan');
+	    Typecho_Plugin::factory('Widget_Contents_Post_Edit')->write_11 = array('Rdog_Plugin', 'fabu');
+	    Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish_11 = array('Rdog_Plugin', 'fabuwan');
+	    Typecho_Plugin::factory('admin/footer.php')->end_11 = array('Rdog_Plugin', 'footerjs');
     }
     
     /**
@@ -99,7 +99,7 @@ public static function zhuce($v) {
     /*用户没输入密码，随机密码*/
     $generatedPassword = Typecho_Common::randString(7);
   }
-  /*将密码设置为常量，方便下个函数adu()直接获取*/
+  /*将密码设置为常量，方便下个函数zhucewan()直接获取*/
   define('passd', $generatedPassword);
   /*将密码加密*/
   $wPassword = $hasher->HashPassword($generatedPassword);
