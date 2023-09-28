@@ -1,5 +1,18 @@
 <?php
-if (!defined('__TYPECHO_ROOT_DIR__')) exit;
+namespace TypechoPlugin\Rdog;
+
+use Typecho\Plugin\PluginInterface;
+use Typecho\Widget\Helper\Form;
+use Typecho\Widget\Helper\Form\Element\Text;
+use Widget\Options;
+use Utils\Helper;
+use Utils\PasswordHash;
+use Typecho\Common;
+use Typecho\Cookie;
+
+if (!defined('__TYPECHO_ROOT_DIR__')) {
+    exit;
+}
 /**
  * 修改注册时默认用户组，贡献者可直接发布文章无需审核,前台注册支持用户输入密码,支持模板开发者设置前台注册后的跳转地址，设置前台文章发布后的跳转地址
  * 
@@ -8,7 +21,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * @version 1.6.2
  * @link https://github.com/jrotty/Rdog
  */
-class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interface
+class Plugin extends Widget_Abstract_Users implements PluginInterface
 {
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
@@ -52,7 +65,6 @@ class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interf
 //print_r($catmid);
 
     $yonghuzu = new Typecho_Widget_Helper_Form_Element_Radio('yonghuzu',array(
-      'visitor' => _t('访问者'),
       'subscriber' => _t('关注者'),
       'contributor' => _t('贡献者'),
       'editor' => _t('编辑'),
