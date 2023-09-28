@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package 权限狗
  * @author 泽泽
- * @version 1.6.1
+ * @version 1.6.2
  * @link https://github.com/jrotty/Rdog
  */
 class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interface
@@ -19,11 +19,12 @@ class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interf
      */
     public static function activate()
     {
-	    Typecho_Plugin::factory('Widget_Register')->register_11 = array('Rdog_Plugin', 'zhuce'); 
-	    Typecho_Plugin::factory('Widget_Register')->finishRegister_11 = array('Rdog_Plugin', 'zhucewan');
-	    Typecho_Plugin::factory('Widget_Contents_Post_Edit')->write_11 = array('Rdog_Plugin', 'fabu');
-	    Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish_11 = array('Rdog_Plugin', 'fabuwan');
-	    Typecho_Plugin::factory('admin/footer.php')->end_11 = array('Rdog_Plugin', 'footerjs');
+	    \Typecho\Plugin::factory('Widget_Register')->register_11 = __CLASS__ . '::zhuce'; //用于注册时支持设置密码
+	    \Typecho\Plugin::factory('Widget_Register')->finishRegister_11 = __CLASS__ . '::zhucewan';//用户注册完成后自定义跳转地址
+	    \Typecho\Plugin::factory('Widget_Contents_Post_Edit')->write_11 = __CLASS__ . '::fabu';//文章免审核
+	    \Typecho\Plugin::factory('Widget_Contents_Post_Edit')->finishPublish_11 = __CLASS__ . '::fabuwan';//用于指定跳转地址
+	    \Typecho\Plugin::factory('Widget_Contents_Post_Edit')->finishSave_11 = __CLASS__ . '::fabuwan';//用于指定跳转地址
+	    \Typecho\Plugin::factory('admin/footer.php')->end_11 =  __CLASS__ . '::footerjs';//用于默认后台注册页面显示密码输入框
     }
     
     /**
@@ -148,7 +149,7 @@ $result=array_intersect($t,$con['category']);
 /*不存在交集*/
 if(count($result)==0){
   /*如果用户是贡献者临时给予编辑权限，并且非特例分类*/
-if($obj->author->group=='contributor'||$obj->user->group=='contributor'){
+if($obj->user->group=='contributor'){
   $obj->user->group='editor';
   }
 }
