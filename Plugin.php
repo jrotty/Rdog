@@ -89,19 +89,23 @@ class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interf
      * @return void
      */
 public static function zhuce($v) {
+  \Widget\Options::alloc()->to($options);
+  $sitting=$options->plugin('Rdog');
   /*获取插件设置*/
-   $yonghuzu = Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->yonghuzu;
-  $hasher = new PasswordHash(8, true);
+   $yonghuzu = $sitting->yonghuzu;
+   $hasher = new PasswordHash(8, true);
   /*判断注册表单是否有密码*/
-  if(isset(Typecho_Widget::widget('Widget_Register')->request->password)){
+
+  if(!empty($_REQUEST['password'])){
     /*将密码设定为用户输入的密码*/
-    $generatedPassword = Typecho_Widget::widget('Widget_Register')->request->password;
+    $generatedPassword = $_REQUEST['password'];
   }else{
     /*用户没输入密码，随机密码*/
-    $generatedPassword = Typecho_Common::randString(7);
+    $generatedPassword = Common::randString(7);
   }
   /*将密码设置为常量，方便下个函数zhucewan()直接获取*/
   define('passd', $generatedPassword);
+
   /*将密码加密*/
   $wPassword = $hasher->HashPassword($generatedPassword);
   /*设置用户密码*/
