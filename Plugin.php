@@ -135,13 +135,14 @@ public static function zhucewan($obj) {
   
   
 public static function fabu($con,$obj) {
+\Widget\Options::alloc()->to($options);
+$sitting=$options->plugin('Rdog');
   /*插件用户设置是否勾选*/    
-if (!empty(Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tuozhan) && in_array('contributor-nb',  Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tuozhan)){
+if (!empty($sitting->tuozhan) && in_array('contributor-nb',  $sitting->tuozhan)){
  /*获取插件设置的分类id*/      
-$tcat = Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tcat;
+$tcat = $sitting->tcat;
 /*转成数组*/
 $t=explode(",",$tcat);
-
 
 /*求插件设置的分类id数据与用户勾选的分类数据交集*/
 $result=array_intersect($t,$con['category']);
@@ -154,7 +155,6 @@ if($obj->user->group=='contributor'){
   }
 }
 }
-
 return $con;
 }
   
