@@ -1,27 +1,14 @@
 <?php
-namespace TypechoPlugin\Rdog;
-
-use Typecho\Plugin\PluginInterface;
-use Typecho\Widget\Helper\Form;
-use Typecho\Widget\Helper\Form\Element\Text;
-use Widget\Options;
-use Utils\Helper;
-use Utils\PasswordHash;
-use Typecho\Common;
-use Typecho\Cookie;
-
-if (!defined('__TYPECHO_ROOT_DIR__')) {
-    exit;
-}
+if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 /**
  * 修改注册时默认用户组，贡献者可直接发布文章无需审核,前台注册支持用户输入密码,支持模板开发者设置前台注册后的跳转地址，设置前台文章发布后的跳转地址
  * 
  * @package 权限狗
  * @author 泽泽
- * @version 1.6.2
+ * @version 1.6.1
  * @link https://github.com/jrotty/Rdog
  */
-class Plugin extends Widget_Abstract_Users implements PluginInterface
+class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interface
 {
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
@@ -32,12 +19,11 @@ class Plugin extends Widget_Abstract_Users implements PluginInterface
      */
     public static function activate()
     {
-	    \Typecho\Plugin::factory('Widget_Register')->register_11 = __CLASS__ . '::zhuce'; //用于注册时支持设置密码
-	    \Typecho\Plugin::factory('Widget_Register')->finishRegister_11 = __CLASS__ . '::zhucewan';//用户注册完成后自定义跳转地址
-	    \Typecho\Plugin::factory('Widget_Contents_Post_Edit')->write_11 = __CLASS__ . '::fabu';//文章免审核
-	    \Typecho\Plugin::factory('Widget_Contents_Post_Edit')->finishPublish_11 = __CLASS__ . '::fabuwan';//用于指定跳转地址
-	    \Typecho\Plugin::factory('Widget_Contents_Post_Edit')->finishSave_11 = __CLASS__ . '::fabuwan';//用于指定跳转地址
-	    \Typecho\Plugin::factory('admin/footer.php')->end_11 =  __CLASS__ . '::footerjs';//用于默认后台注册页面显示密码输入框
+      Typecho_Plugin::factory('Widget_Register')->register_11 = array('Rdog_Plugin', 'zhuce'); 
+	  Typecho_Plugin::factory('Widget_Register')->finishRegister_11 = array('Rdog_Plugin', 'zhucewan');
+	  Typecho_Plugin::factory('Widget_Contents_Post_Edit')->write_11 = array('Rdog_Plugin', 'fabu');
+	  Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish_11 = array('Rdog_Plugin', 'fabuwan');
+      Typecho_Plugin::factory('admin/footer.php')->end_11 = array('Rdog_Plugin', 'footerjs');
     }
     
     /**
@@ -65,6 +51,7 @@ class Plugin extends Widget_Abstract_Users implements PluginInterface
 //print_r($catmid);
 
     $yonghuzu = new Typecho_Widget_Helper_Form_Element_Radio('yonghuzu',array(
+      'visitor' => _t('访问者'),
       'subscriber' => _t('关注者'),
       'contributor' => _t('贡献者'),
       'editor' => _t('编辑'),
@@ -101,23 +88,19 @@ class Plugin extends Widget_Abstract_Users implements PluginInterface
      * @return void
      */
 public static function zhuce($v) {
-  \Widget\Options::alloc()->to($options);
-  $sitting=$options->plugin('Rdog');
   /*获取插件设置*/
-   $yonghuzu = $sitting->yonghuzu;
-   $hasher = new PasswordHash(8, true);
+   $yonghuzu = Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->yonghuzu;
+  $hasher = new PasswordHash(8, true);
   /*判断注册表单是否有密码*/
-
-  if(!empty($_REQUEST['password'])){
+  if(isset(Typecho_Widget::widget('Widget_Register')->request->password)){
     /*将密码设定为用户输入的密码*/
-    $generatedPassword = $_REQUEST['password'];
+    $generatedPassword = Typecho_Widget::widget('Widget_Register')->request->password;
   }else{
     /*用户没输入密码，随机密码*/
-    $generatedPassword = Common::randString(7);
+    $generatedPassword = Typecho_Common::randString(7);
   }
-  /*将密码设置为常量，方便下个函数zhucewan()直接获取*/
+  /*将密码设置为常量，方便下个函数adu()直接获取*/
   define('passd', $generatedPassword);
-
   /*将密码加密*/
   $wPassword = $hasher->HashPassword($generatedPassword);
   /*设置用户密码*/
@@ -151,14 +134,13 @@ public static function zhucewan($obj) {
   
   
 public static function fabu($con,$obj) {
-\Widget\Options::alloc()->to($options);
-$sitting=$options->plugin('Rdog');
   /*插件用户设置是否勾选*/    
-if (!empty($sitting->tuozhan) && in_array('contributor-nb',  $sitting->tuozhan)){
+if (!empty(Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tuozhan) && in_array('contributor-nb',  Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tuozhan)){
  /*获取插件设置的分类id*/      
-$tcat = $sitting->tcat;
+$tcat = Typecho_Widget::widget('Widget_Options')->plugin('Rdog')->tcat;
 /*转成数组*/
 $t=explode(",",$tcat);
+
 
 /*求插件设置的分类id数据与用户勾选的分类数据交集*/
 $result=array_intersect($t,$con['category']);
@@ -166,11 +148,12 @@ $result=array_intersect($t,$con['category']);
 /*不存在交集*/
 if(count($result)==0){
   /*如果用户是贡献者临时给予编辑权限，并且非特例分类*/
-if($obj->user->group=='contributor'){
+if($obj->author->group=='contributor'||$obj->user->group=='contributor'){
   $obj->user->group='editor';
   }
 }
 }
+
 return $con;
 }
   
