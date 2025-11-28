@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package 权限狗
  * @author 泽泽
- * @version 1.6.1
+ * @version 1.6.2
  * @link https://github.com/jrotty/Rdog
  */
 class Rdog_Plugin extends Widget_Abstract_Users implements Typecho_Plugin_Interface
@@ -111,6 +111,9 @@ public static function zhuce($v) {
   return $v;
 }
 public static function zhucewan($obj) {
+ \Widget\Options::alloc()->to($options);
+ $request = $options->request;
+ $response = $options->response;
  /*获取密码*/
  $wPassword=passd;
  /*登录账号*/
@@ -119,6 +122,10 @@ public static function zhucewan($obj) {
  Typecho_Cookie::delete('__typecho_first_run');
  Typecho_Cookie::delete('__typecho_remember_name');
  Typecho_Cookie::delete('__typecho_remember_mail');
+
+ if($request->isAjax()){
+	 $response->throwJson(array('status'=>1,'msg'=> $obj->screenName.' 已经注册成功！'));
+ }
  /*发出提示*/
  $obj->widget('Widget_Notice')->set(_t('用户 <strong>%s</strong> 已经成功注册, 密码为 <strong>%s</strong>', $obj->screenName, $wPassword), 'success');
  /*跳转地址(后台)*/
