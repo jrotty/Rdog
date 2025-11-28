@@ -111,9 +111,8 @@ public static function zhuce($v) {
   return $v;
 }
 public static function zhucewan($obj) {
- \Widget\Options::alloc()->to($options);
- $request = $options->request;
- $response = $options->response;
+ $request = Helper::options()->request;
+ $response = Helper::options()->response;
  /*获取密码*/
  $wPassword=passd;
  /*登录账号*/
